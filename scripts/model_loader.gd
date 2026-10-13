@@ -60,3 +60,43 @@ static func find_animation_player(node: Node) -> AnimationPlayer:
 		if found:
 			return found
 	return null
+
+
+## Measures the box that [param node] and everything inside it fits in,
+## in [param node]'s own space. Works before the model is added to the scene.
+static func get_aabb(node: Node3D, parent_transform := Transform3D.IDENTITY) -> AABB:
+	var xform := parent_transform * node.transform
+	var result := AABB()
+	var has_result := false
+	if node is MeshInstance3D and node.mesh:
+		result = xform * node.mesh.get_aabb()
+		has_result = true
+	for child in node.get_children():
+		if child is Node3D:
+			var child_aabb := get_aabb(child, xform)
+			if child_aabb.size == Vector3.ZERO:
+				continue
+			result = child_aabb if not has_result else result.merge(child_aabb)
+			has_result = true
+	return result
+
+
+## Lists every model file (.glb, .gltf, .fbx, .obj) in [param folder] and its
+## sub-folders.
+static func find_model_files(folder: String) -> Array[String]:
+	var result: Array[String] = []
+	if folder == "":
+		return result
+	var dir := DirAccess.open(folder)
+	if dir == null:
+		push_warning("Can't open folder '%s'." % folder)
+		return result
+	for file in dir.get_files():
+		# In an exported game the files are listed with ".import" on the end.
+		file = file.trim_suffix(".import").trim_suffix(".remap")
+		var path := folder.path_join(file)
+		if file.get_extension().to_lower() in ["glb", "gltf", "fbx", "obj"] and path not in result:
+			result.append(path)
+	for sub in dir.get_directories():
+		result.append_array(find_model_files(folder.path_join(sub)))
+	return result

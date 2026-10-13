@@ -2,8 +2,9 @@
 
 A GTA-style, semi-open-world game set in London, built with **Godot 4**.
 
-**So far:** a London street where you walk around in third person, and cars you can
-get into and drive.
+**So far:** a city of 6 × 6 blocks of London streets (about 450 m across) with zebra
+crossings, street lamps, parks, a suburban outer ring and an industrial edge. You walk
+around in third person and can get into cars and drive them.
 
 | Key | Action |
 |-----|--------|
@@ -64,11 +65,12 @@ Godot spends a few seconds importing files the first time.
 ```
 project.godot        Project settings, including the controls (Project > Project Settings > Input Map)
 icon.svg             The game's icon
-scenes/main.tscn     The London street: road, pavements, buildings, phone box, bus, sun, sky
+scenes/main.tscn     The game world: the City, props (phone box, bus...), cars, player, sun, sky
 scenes/player.tscn   The player: a blue capsule with a camera behind it
 scenes/car.tscn      A drivable car (a blue box car until you give it a model)
 scenes/model_prop.tscn  A slot that shows any model file you give it (and makes it solid)
 scripts/player.gd    The code that makes the player walk, run, jump and steer the camera
+scripts/city_grid.gd The city generator: builds the roads, pavements, buildings, lamps and parks
 scripts/car.gd       The code for driving, the chase camera and the speedometer
 scripts/model_prop.gd, model_loader.gd  The code behind the model slots
 assets/models/       Put your GAMEPRO .glb / .fbx / .obj files here
@@ -78,10 +80,8 @@ assets/textures/     Put your GAMEPRO .png files here
 ### Things to try (no code)
 - **Change walking speed:** double-click `scenes/main.tscn`, click **Player** in the
   Scene tree, and change **Walk Speed** / **Run Speed** in the Inspector.
-- **Recolour or resize a building:** expand **Buildings**, click one, and change its
-  **Size** in the Inspector. To recolour it, open **Material** and change **Albedo > Color**.
-- **Add another building:** click a building and press **Ctrl+D** to duplicate it,
-  then drag the coloured arrows in the viewport to move it.
+- **Change the city:** click **City** in the Scene tree and change the settings in the
+  Inspector (see "The city" below).
 - Press **Ctrl+S** to save, then **F5** to play.
 
 ---
@@ -138,8 +138,7 @@ into the 3D view.
 Models placed this way are **solid**: the player bumps into them. Untick **Solid** for
 things you should be able to walk through.
 
-To swap a grey box building for one of your models, add a model slot where the box was.
-Then click the box and press **Delete**.
+To fill the whole city with your buildings at once, see **The city** below.
 
 ### 4. Use your car models
 There are two cars in the street, under **Vehicles** in the Scene tree.
@@ -159,9 +158,50 @@ There are two cars in the street, under **Vehicles** in the Scene tree.
 > blue lines. For a much bigger or smaller vehicle, click its **CollisionShape3D** and change
 > **Size**. You can also move the four **Wheel** nodes to sit where your model's wheels are.
 
-### Tips for the city packs
-- Build blocks from the **suburban / normal / industrial** packs using model slots
-  (section 3). Duplicate a slot (**Ctrl+D**) and swap the model to make a terrace of houses or shops.
-- To make positioning tidy, turn on snapping: click the **magnet icon** in the toolbar above
-  the 3D view. Objects then move in 1 m steps.
-- Big packs can slow the editor down while they import. That's normal the first time.
+---
+
+## The city
+
+The whole map is made by one node called **City**. Click it in the Scene tree and all its
+settings appear in the Inspector. Change any of them and the city rebuilds itself
+immediately.
+
+**Layout**
+| Setting | What it does |
+|---------|--------------|
+| Blocks X / Blocks Z | How many blocks across and deep. 6 × 6 is about 450 m square. 10 × 10 is about 740 m. |
+| Block Size | Size of each block in metres |
+| Road Width / Pavement Width | Width of the roads and pavements |
+| Random Seed | Type any number to get a different random city |
+| Park Chance | How often a block in the middle of town becomes a park |
+| Industrial Edge | Puts warehouses and factories along the east side |
+| Street Lamps | Turns the lamp posts on or off |
+
+The middle of town has brick, stone and glass buildings. The outer ring has smaller
+houses with gaps between them. The east edge is industrial. There's always a crossroads
+at the very centre of the map.
+
+### Use your city packs for the buildings
+1. Put each pack in its own folder inside `assets/models`, for example
+   `assets/models/city`, `assets/models/suburban` and `assets/models/industrial`.
+   **Only include buildings.** Move cars, trees, benches and other small props into a
+   different folder, or they'll be used as buildings and blown up to building size.
+2. Click **City**, then open **Building Models** in the Inspector.
+3. Click the folder icon next to **City Models Folder** and choose your city/normal pack
+   folder. Do the same for **Suburban Models Folder** and **Industrial Models Folder**.
+   Any folder you leave empty keeps using the plain box buildings.
+4. The plots fill with random buildings from each folder, including models in sub-folders.
+   They are resized to fit their plot, sit on the pavement and are solid.
+5. **Facing the wrong way** (backs to the road)? Tick **Flip Models**.
+6. **Prefer the models' own sizes?** Untick **Fit Models To Plots** and set **Model Scale**
+   (for example `0.01` if they come out 100 times too big).
+
+> Your London buildings and the store are best placed by hand, so they go exactly where you
+> want them. Use a model slot (section 3 above) for each one. Turn on snapping by
+> clicking the **magnet icon** above the 3D view, so things move in 1 m steps.
+>
+> The generated buildings can't be clicked or edited one at a time. To make space for a
+> hand-placed landmark, change **Random Seed** until a park lands where you want it.
+> Otherwise, place the landmark on the edge of the map.
+
+Big packs can make the editor slow while they import the first time, which is normal.

@@ -1,13 +1,15 @@
-[gd_scene load_steps=19 format=3]
+[gd_scene load_steps=12 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="1_player"]
 [ext_resource type="PackedScene" path="res://scenes/model_prop.tscn" id="2_prop"]
 [ext_resource type="PackedScene" path="res://scenes/car.tscn" id="3_car"]
+[ext_resource type="Script" path="res://scripts/city_grid.gd" id="4_city"]
 
 [sub_resource type="ProceduralSkyMaterial" id="SkyMat"]
 sky_top_color = Color(0.45, 0.55, 0.7, 1)
 sky_horizon_color = Color(0.75, 0.78, 0.82, 1)
 ground_horizon_color = Color(0.75, 0.78, 0.82, 1)
+ground_bottom_color = Color(0.32, 0.36, 0.32, 1)
 
 [sub_resource type="Sky" id="Sky"]
 sky_material = SubResource("SkyMat")
@@ -19,27 +21,7 @@ ambient_light_source = 3
 tonemap_mode = 2
 fog_enabled = true
 fog_light_color = Color(0.7, 0.73, 0.78, 1)
-fog_density = 0.004
-
-[sub_resource type="StandardMaterial3D" id="Mat_ground"]
-albedo_color = Color(0.25, 0.32, 0.22, 1)
-roughness = 0.9
-
-[sub_resource type="StandardMaterial3D" id="Mat_road"]
-albedo_color = Color(0.18, 0.18, 0.2, 1)
-roughness = 0.9
-
-[sub_resource type="StandardMaterial3D" id="Mat_pavement"]
-albedo_color = Color(0.42, 0.42, 0.4, 1)
-roughness = 0.9
-
-[sub_resource type="StandardMaterial3D" id="Mat_line"]
-albedo_color = Color(0.95, 0.95, 0.9, 1)
-roughness = 0.9
-
-[sub_resource type="StandardMaterial3D" id="Mat_yellow"]
-albedo_color = Color(0.95, 0.75, 0.1, 1)
-roughness = 0.9
+fog_density = 0.003
 
 [sub_resource type="StandardMaterial3D" id="Mat_red"]
 albedo_color = Color(0.78, 0.06, 0.14, 1)
@@ -48,26 +30,6 @@ roughness = 0.5
 [sub_resource type="StandardMaterial3D" id="Mat_glass"]
 albedo_color = Color(0.6, 0.75, 0.85, 1)
 roughness = 0.2
-
-[sub_resource type="StandardMaterial3D" id="Mat_building0"]
-albedo_color = Color(0.55, 0.27, 0.2, 1)
-roughness = 0.9
-
-[sub_resource type="StandardMaterial3D" id="Mat_building1"]
-albedo_color = Color(0.62, 0.36, 0.26, 1)
-roughness = 0.9
-
-[sub_resource type="StandardMaterial3D" id="Mat_building2"]
-albedo_color = Color(0.82, 0.78, 0.68, 1)
-roughness = 0.9
-
-[sub_resource type="StandardMaterial3D" id="Mat_building3"]
-albedo_color = Color(0.45, 0.22, 0.18, 1)
-roughness = 0.9
-
-[sub_resource type="StandardMaterial3D" id="Mat_building4"]
-albedo_color = Color(0.7, 0.66, 0.6, 1)
-roughness = 0.9
 
 [node name="Main" type="Node3D"]
 
@@ -78,497 +40,51 @@ environment = SubResource("Env")
 transform = Transform3D(0.866025, -0.383022, 0.321394, 0, 0.642788, 0.766044, -0.5, -0.663414, 0.55667, 0, 20, 0)
 light_energy = 0.9
 shadow_enabled = true
-directional_shadow_max_distance = 120.0
+directional_shadow_max_distance = 150.0
 
-[node name="Street" type="Node3D" parent="."]
-
-[node name="Ground" type="CSGBox3D" parent="Street"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.12, 0)
-use_collision = true
-size = Vector3(240, 0.2, 280)
-material = SubResource("Mat_ground")
-
-[node name="Road" type="CSGBox3D" parent="Street"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0)
-use_collision = true
-size = Vector3(12, 0.2, 200)
-material = SubResource("Mat_road")
-
-[node name="PavementLeft" type="CSGBox3D" parent="Street"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.5, -0.04, 0)
-use_collision = true
-size = Vector3(5, 0.2, 200)
-material = SubResource("Mat_pavement")
-
-[node name="PavementRight" type="CSGBox3D" parent="Street"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, -0.04, 0)
-use_collision = true
-size = Vector3(5, 0.2, 200)
-material = SubResource("Mat_pavement")
-
-[node name="RoadMarkings" type="Node3D" parent="Street"]
-
-[node name="Dash0" type="CSGBox3D" parent="Street/RoadMarkings"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.005, -96)
-size = Vector3(0.15, 0.02, 3)
-material = SubResource("Mat_line")
-
-[node name="Dash1" type="CSGBox3D" parent="Street/RoadMarkings"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.005, -90)
-size = Vector3(0.15, 0.02, 3)
-material = SubResource("Mat_line")
-
-[node name="Dash2" type="CSGBox3D" parent="Street/RoadMarkings"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.005, -84)
-size = Vector3(0.15, 0.02, 3)
-material = SubResource("Mat_line")
-
-[node name="Dash3" type="CSGBox3D" parent="Street/RoadMarkings"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.005, -78)
-size = Vector3(0.15, 0.02, 3)
-material = SubResource("Mat_line")
-
-[node name="Dash4" type="CSGBox3D" parent="Street/RoadMarkings"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.005, -72)
-size = Vector3(0.15, 0.02, 3)
-material = SubResource("Mat_line")
-
-[node name="Dash5" type="CSGBox3D" parent="Street/RoadMarkings"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.005, -66)
-size = Vector3(0.15, 0.02, 3)
-material = SubResource("Mat_line")
-
-[node name="Dash6" type="CSGBox3D" parent="Street/RoadMarkings"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.005, -60)
-size = Vector3(0.15, 0.02, 3)
-material = SubResource("Mat_line")
-
-[node name="Dash7" type="CSGBox3D" parent="Street/RoadMarkings"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.005, -54)
-size = Vector3(0.15, 0.02, 3)
-material = SubResource("Mat_line")
-
-[node name="Dash8" type="CSGBox3D" parent="Street/RoadMarkings"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.005, -48)
-size = Vector3(0.15, 0.02, 3)
-material = SubResource("Mat_line")
-
-[node name="Dash9" type="CSGBox3D" parent="Street/RoadMarkings"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.005, -42)
-size = Vector3(0.15, 0.02, 3)
-material = SubResource("Mat_line")
-
-[node name="Dash10" type="CSGBox3D" parent="Street/RoadMarkings"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.005, -36)
-size = Vector3(0.15, 0.02, 3)
-material = SubResource("Mat_line")
-
-[node name="Dash11" type="CSGBox3D" parent="Street/RoadMarkings"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.005, -30)
-size = Vector3(0.15, 0.02, 3)
-material = SubResource("Mat_line")
-
-[node name="Dash12" type="CSGBox3D" parent="Street/RoadMarkings"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.005, -24)
-size = Vector3(0.15, 0.02, 3)
-material = SubResource("Mat_line")
-
-[node name="Dash13" type="CSGBox3D" parent="Street/RoadMarkings"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.005, -18)
-size = Vector3(0.15, 0.02, 3)
-material = SubResource("Mat_line")
-
-[node name="Dash14" type="CSGBox3D" parent="Street/RoadMarkings"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.005, -12)
-size = Vector3(0.15, 0.02, 3)
-material = SubResource("Mat_line")
-
-[node name="Dash15" type="CSGBox3D" parent="Street/RoadMarkings"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.005, -6)
-size = Vector3(0.15, 0.02, 3)
-material = SubResource("Mat_line")
-
-[node name="Dash16" type="CSGBox3D" parent="Street/RoadMarkings"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.005, 0)
-size = Vector3(0.15, 0.02, 3)
-material = SubResource("Mat_line")
-
-[node name="Dash17" type="CSGBox3D" parent="Street/RoadMarkings"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.005, 6)
-size = Vector3(0.15, 0.02, 3)
-material = SubResource("Mat_line")
-
-[node name="Dash18" type="CSGBox3D" parent="Street/RoadMarkings"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.005, 12)
-size = Vector3(0.15, 0.02, 3)
-material = SubResource("Mat_line")
-
-[node name="Dash19" type="CSGBox3D" parent="Street/RoadMarkings"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.005, 18)
-size = Vector3(0.15, 0.02, 3)
-material = SubResource("Mat_line")
-
-[node name="Dash20" type="CSGBox3D" parent="Street/RoadMarkings"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.005, 24)
-size = Vector3(0.15, 0.02, 3)
-material = SubResource("Mat_line")
-
-[node name="Dash21" type="CSGBox3D" parent="Street/RoadMarkings"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.005, 30)
-size = Vector3(0.15, 0.02, 3)
-material = SubResource("Mat_line")
-
-[node name="Dash22" type="CSGBox3D" parent="Street/RoadMarkings"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.005, 36)
-size = Vector3(0.15, 0.02, 3)
-material = SubResource("Mat_line")
-
-[node name="Dash23" type="CSGBox3D" parent="Street/RoadMarkings"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.005, 42)
-size = Vector3(0.15, 0.02, 3)
-material = SubResource("Mat_line")
-
-[node name="Dash24" type="CSGBox3D" parent="Street/RoadMarkings"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.005, 48)
-size = Vector3(0.15, 0.02, 3)
-material = SubResource("Mat_line")
-
-[node name="Dash25" type="CSGBox3D" parent="Street/RoadMarkings"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.005, 54)
-size = Vector3(0.15, 0.02, 3)
-material = SubResource("Mat_line")
-
-[node name="Dash26" type="CSGBox3D" parent="Street/RoadMarkings"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.005, 60)
-size = Vector3(0.15, 0.02, 3)
-material = SubResource("Mat_line")
-
-[node name="Dash27" type="CSGBox3D" parent="Street/RoadMarkings"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.005, 66)
-size = Vector3(0.15, 0.02, 3)
-material = SubResource("Mat_line")
-
-[node name="Dash28" type="CSGBox3D" parent="Street/RoadMarkings"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.005, 72)
-size = Vector3(0.15, 0.02, 3)
-material = SubResource("Mat_line")
-
-[node name="Dash29" type="CSGBox3D" parent="Street/RoadMarkings"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.005, 78)
-size = Vector3(0.15, 0.02, 3)
-material = SubResource("Mat_line")
-
-[node name="Dash30" type="CSGBox3D" parent="Street/RoadMarkings"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.005, 84)
-size = Vector3(0.15, 0.02, 3)
-material = SubResource("Mat_line")
-
-[node name="Dash31" type="CSGBox3D" parent="Street/RoadMarkings"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.005, 90)
-size = Vector3(0.15, 0.02, 3)
-material = SubResource("Mat_line")
-
-[node name="Dash32" type="CSGBox3D" parent="Street/RoadMarkings"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.005, 96)
-size = Vector3(0.15, 0.02, 3)
-material = SubResource("Mat_line")
-
-[node name="YellowLeftA" type="CSGBox3D" parent="Street/RoadMarkings"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.7, 0.005, 0)
-size = Vector3(0.1, 0.02, 200)
-material = SubResource("Mat_yellow")
-
-[node name="YellowLeftB" type="CSGBox3D" parent="Street/RoadMarkings"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.45, 0.005, 0)
-size = Vector3(0.1, 0.02, 200)
-material = SubResource("Mat_yellow")
-
-[node name="YellowRightA" type="CSGBox3D" parent="Street/RoadMarkings"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.7, 0.005, 0)
-size = Vector3(0.1, 0.02, 200)
-material = SubResource("Mat_yellow")
-
-[node name="YellowRightB" type="CSGBox3D" parent="Street/RoadMarkings"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.45, 0.005, 0)
-size = Vector3(0.1, 0.02, 200)
-material = SubResource("Mat_yellow")
-
-[node name="Buildings" type="Node3D" parent="."]
-
-[node name="BuildingL0" type="CSGBox3D" parent="Buildings"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16, 6.0, -94.0)
-use_collision = true
-size = Vector3(10, 12, 11.7)
-material = SubResource("Mat_building3")
-
-[node name="BuildingL1" type="CSGBox3D" parent="Buildings"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16, 4.5, -84.0)
-use_collision = true
-size = Vector3(10, 9, 7.7)
-material = SubResource("Mat_building4")
-
-[node name="BuildingL2" type="CSGBox3D" parent="Buildings"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16, 6.0, -76.0)
-use_collision = true
-size = Vector3(10, 12, 7.7)
-material = SubResource("Mat_building4")
-
-[node name="BuildingL3" type="CSGBox3D" parent="Buildings"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16, 9.0, -68.0)
-use_collision = true
-size = Vector3(10, 18, 7.7)
-material = SubResource("Mat_building1")
-
-[node name="BuildingL4" type="CSGBox3D" parent="Buildings"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16, 4.5, -60.0)
-use_collision = true
-size = Vector3(10, 9, 7.7)
-material = SubResource("Mat_building3")
-
-[node name="BuildingL5" type="CSGBox3D" parent="Buildings"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16, 4.5, -49.0)
-use_collision = true
-size = Vector3(10, 9, 13.7)
-material = SubResource("Mat_building1")
-
-[node name="BuildingL6" type="CSGBox3D" parent="Buildings"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16, 9.0, -38.0)
-use_collision = true
-size = Vector3(10, 18, 7.7)
-material = SubResource("Mat_building3")
-
-[node name="BuildingL7" type="CSGBox3D" parent="Buildings"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16, 9.0, -30.0)
-use_collision = true
-size = Vector3(10, 18, 7.7)
-material = SubResource("Mat_building0")
-
-[node name="BuildingL8" type="CSGBox3D" parent="Buildings"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16, 12.0, -21.0)
-use_collision = true
-size = Vector3(10, 24, 9.7)
-material = SubResource("Mat_building4")
-
-[node name="BuildingL9" type="CSGBox3D" parent="Buildings"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16, 9.0, -12.0)
-use_collision = true
-size = Vector3(10, 18, 7.7)
-material = SubResource("Mat_building4")
-
-[node name="BuildingL10" type="CSGBox3D" parent="Buildings"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16, 4.5, -1.0)
-use_collision = true
-size = Vector3(10, 9, 13.7)
-material = SubResource("Mat_building1")
-
-[node name="BuildingL11" type="CSGBox3D" parent="Buildings"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16, 9.0, 10.0)
-use_collision = true
-size = Vector3(10, 18, 7.7)
-material = SubResource("Mat_building1")
-
-[node name="BuildingL12" type="CSGBox3D" parent="Buildings"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16, 7.5, 20.0)
-use_collision = true
-size = Vector3(10, 15, 11.7)
-material = SubResource("Mat_building1")
-
-[node name="BuildingL13" type="CSGBox3D" parent="Buildings"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16, 9.0, 30.0)
-use_collision = true
-size = Vector3(10, 18, 7.7)
-material = SubResource("Mat_building2")
-
-[node name="BuildingL14" type="CSGBox3D" parent="Buildings"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16, 4.5, 39.0)
-use_collision = true
-size = Vector3(10, 9, 9.7)
-material = SubResource("Mat_building4")
-
-[node name="BuildingL15" type="CSGBox3D" parent="Buildings"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16, 6.0, 49.0)
-use_collision = true
-size = Vector3(10, 12, 9.7)
-material = SubResource("Mat_building0")
-
-[node name="BuildingL16" type="CSGBox3D" parent="Buildings"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16, 9.0, 58.0)
-use_collision = true
-size = Vector3(10, 18, 7.7)
-material = SubResource("Mat_building0")
-
-[node name="BuildingL17" type="CSGBox3D" parent="Buildings"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16, 7.5, 67.0)
-use_collision = true
-size = Vector3(10, 15, 9.7)
-material = SubResource("Mat_building4")
-
-[node name="BuildingL18" type="CSGBox3D" parent="Buildings"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16, 6.0, 79.0)
-use_collision = true
-size = Vector3(10, 12, 13.7)
-material = SubResource("Mat_building3")
-
-[node name="BuildingL19" type="CSGBox3D" parent="Buildings"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16, 6.0, 93.0)
-use_collision = true
-size = Vector3(10, 12, 13.7)
-material = SubResource("Mat_building2")
-
-[node name="BuildingR20" type="CSGBox3D" parent="Buildings"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 6.0, -95.0)
-use_collision = true
-size = Vector3(10, 12, 9.7)
-material = SubResource("Mat_building1")
-
-[node name="BuildingR21" type="CSGBox3D" parent="Buildings"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 9.0, -86.0)
-use_collision = true
-size = Vector3(10, 18, 7.7)
-material = SubResource("Mat_building2")
-
-[node name="BuildingR22" type="CSGBox3D" parent="Buildings"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 6.0, -75.0)
-use_collision = true
-size = Vector3(10, 12, 13.7)
-material = SubResource("Mat_building3")
-
-[node name="BuildingR23" type="CSGBox3D" parent="Buildings"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 9.0, -62.0)
-use_collision = true
-size = Vector3(10, 18, 11.7)
-material = SubResource("Mat_building0")
-
-[node name="BuildingR24" type="CSGBox3D" parent="Buildings"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 9.0, -52.0)
-use_collision = true
-size = Vector3(10, 18, 7.7)
-material = SubResource("Mat_building3")
-
-[node name="BuildingR25" type="CSGBox3D" parent="Buildings"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 6.0, -43.0)
-use_collision = true
-size = Vector3(10, 12, 9.7)
-material = SubResource("Mat_building1")
-
-[node name="BuildingR26" type="CSGBox3D" parent="Buildings"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 7.5, -31.0)
-use_collision = true
-size = Vector3(10, 15, 13.7)
-material = SubResource("Mat_building0")
-
-[node name="BuildingR27" type="CSGBox3D" parent="Buildings"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 9.0, -20.0)
-use_collision = true
-size = Vector3(10, 18, 7.7)
-material = SubResource("Mat_building4")
-
-[node name="BuildingR28" type="CSGBox3D" parent="Buildings"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 6.0, -10.0)
-use_collision = true
-size = Vector3(10, 12, 11.7)
-material = SubResource("Mat_building2")
-
-[node name="BuildingR29" type="CSGBox3D" parent="Buildings"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 9.0, 3.0)
-use_collision = true
-size = Vector3(10, 18, 13.7)
-material = SubResource("Mat_building3")
-
-[node name="BuildingR30" type="CSGBox3D" parent="Buildings"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 4.5, 14.0)
-use_collision = true
-size = Vector3(10, 9, 7.7)
-material = SubResource("Mat_building2")
-
-[node name="BuildingR31" type="CSGBox3D" parent="Buildings"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 12.0, 25.0)
-use_collision = true
-size = Vector3(10, 24, 13.7)
-material = SubResource("Mat_building0")
-
-[node name="BuildingR32" type="CSGBox3D" parent="Buildings"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 12.0, 36.0)
-use_collision = true
-size = Vector3(10, 24, 7.7)
-material = SubResource("Mat_building2")
-
-[node name="BuildingR33" type="CSGBox3D" parent="Buildings"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 6.0, 47.0)
-use_collision = true
-size = Vector3(10, 12, 13.7)
-material = SubResource("Mat_building3")
-
-[node name="BuildingR34" type="CSGBox3D" parent="Buildings"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 4.5, 60.0)
-use_collision = true
-size = Vector3(10, 9, 11.7)
-material = SubResource("Mat_building3")
-
-[node name="BuildingR35" type="CSGBox3D" parent="Buildings"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 6.0, 72.0)
-use_collision = true
-size = Vector3(10, 12, 11.7)
-material = SubResource("Mat_building4")
-
-[node name="BuildingR36" type="CSGBox3D" parent="Buildings"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 7.5, 82.0)
-use_collision = true
-size = Vector3(10, 15, 7.7)
-material = SubResource("Mat_building0")
-
-[node name="BuildingR37" type="CSGBox3D" parent="Buildings"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 6.0, 91.0)
-use_collision = true
-size = Vector3(10, 12, 9.7)
-material = SubResource("Mat_building1")
-
-[node name="BuildingR38" type="CSGBox3D" parent="Buildings"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 7.5, 98.0)
-use_collision = true
-size = Vector3(10, 15, 3.7)
-material = SubResource("Mat_building3")
+[node name="City" type="Node3D" parent="."]
+script = ExtResource("4_city")
 
 [node name="Props" type="Node3D" parent="."]
 
 [node name="PhoneBox" type="CSGBox3D" parent="Props"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.2, 1.3, -12)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 1.38, 14)
 use_collision = true
 size = Vector3(1, 2.6, 1)
 material = SubResource("Mat_red")
 
 [node name="PostBox" type="CSGBox3D" parent="Props"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.0, 0.7, -20)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.5, 0.78, 20)
 use_collision = true
 size = Vector3(0.6, 1.4, 0.6)
 material = SubResource("Mat_red")
 
 [node name="Bus" type="CSGBox3D" parent="Props"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 2.3, -35)
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 40, 2.3, -3)
 use_collision = true
 size = Vector3(2.5, 4.4, 11)
 material = SubResource("Mat_red")
 
 [node name="BusWindowsLower" type="CSGBox3D" parent="Props/Bus"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.3, 0)
-size = Vector3(2.55, 1.0, 9.5)
+size = Vector3(2.55, 1, 9.5)
 material = SubResource("Mat_glass")
 
 [node name="BusWindowsUpper" type="CSGBox3D" parent="Props/Bus"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -0.3)
-size = Vector3(2.55, 1.0, 9.5)
+size = Vector3(2.55, 1, 9.5)
 material = SubResource("Mat_glass")
 
 [node name="YourModelHere" parent="Props" instance=ExtResource("2_prop")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 0.06, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, 0.08, 45)
 
 [node name="Vehicles" type="Node3D" parent="."]
 
 [node name="Car" parent="Vehicles" instance=ExtResource("3_car")]
-transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -3, 0.3, 4)
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -3, 0.3, 30)
 
 [node name="Car2" parent="Vehicles" instance=ExtResource("3_car")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0.3, -12)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0.3, -25)
 
 [node name="Player" parent="." instance=ExtResource("1_player")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 0.1, 10)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 0.2, 26)
