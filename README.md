@@ -3,8 +3,9 @@
 A GTA-style, semi-open-world game set in London, built with **Godot 4**.
 
 **So far:** a city of 6 × 6 blocks of London streets (about 450 m across) with zebra
-crossings, street lamps, parks, a suburban outer ring and an industrial edge. You walk
-around in third person and can get into cars and drive them.
+crossings, street lamps, parks, a suburban outer ring and an industrial edge. Traffic (cars,
+black cabs and red buses) drives on the left, turns at junctions and queues. You walk around
+in third person and can get into cars and drive them.
 
 | Key | Action |
 |-----|--------|
@@ -65,15 +66,19 @@ Godot spends a few seconds importing files the first time.
 ```
 project.godot        Project settings, including the controls (Project > Project Settings > Input Map)
 icon.svg             The game's icon
-scenes/main.tscn     The game world: the City, props (phone box, bus...), cars, player, sun, sky
+scenes/main.tscn     The game world: the City, traffic, props (phone box, postbox), cars, player, sun, sky
 scenes/player.tscn   The player: a blue capsule with a camera behind it
 scenes/car.tscn      A drivable car (a blue box car until you give it a model)
 scenes/model_prop.tscn  A slot that shows any model file you give it (and makes it solid)
 scripts/player.gd    The code that makes the player walk, run, jump and steer the camera
 scripts/city_grid.gd The city generator: builds the roads, pavements, buildings, lamps and parks
+scripts/traffic.gd   Traffic: routes, junction queues, and spotting what's in front
+scripts/traffic_car.gd  One computer-driven car or bus
 scripts/car.gd       The code for driving, the chase camera and the speedometer
 scripts/model_prop.gd, model_loader.gd  The code behind the model slots
-assets/models/       Put your GAMEPRO .glb / .fbx / .obj files here
+assets/characters/   Put your player character here. It's used automatically.
+assets/models/cars/  Put car models here. Traffic uses them automatically.
+assets/models/       Put your other GAMEPRO .glb / .fbx / .obj files here
 assets/textures/     Put your GAMEPRO .png files here
 ```
 
@@ -108,13 +113,19 @@ Godot imports them automatically. This takes a few seconds, and a progress bar a
 | `.png` | Textures (the "paint" for a model). |
 
 ### 2. Use your character as the player
+**The easy way:** drag your character's `.glb` or `.fbx` file into the **`assets/characters`**
+folder. The player uses it automatically: the blue capsule disappears, and your character
+is resized to 1.8 m tall and stood on the ground. If several are in there, the first one
+alphabetically is used.
+
+**To choose a specific one:**
 1. Open `scenes/main.tscn` (double-click it in FileSystem).
 2. Click **Player** in the Scene tree (top left).
 3. In the Inspector (right), open the **Character Model** section.
 4. Drag your character's `.glb`/`.fbx` file from FileSystem onto the **Character Model** box.
-   The blue capsule is replaced by your model.
 5. Adjust it if needed:
-   - **Too big or too small?** Change **Model Scale** (try `0.01` if it's enormous, or `100` if it's tiny).
+   - **Wrong size?** Characters are fitted to 1.8 m automatically. Use **Model Scale**
+     to make them a bit bigger or smaller, or untick **Fit To Height** to turn this off.
    - **Walks backwards?** Tick **Flip Model Direction**.
    - **Looks white?** Drag its `.png` onto **Character Texture**.
 6. Press **F5**. If the model has animations with names containing *idle*, *walk* or *run*,
@@ -141,7 +152,11 @@ things you should be able to walk through.
 To fill the whole city with your buildings at once, see **The city** below.
 
 ### 4. Use your car models
-There are two cars in the street, under **Vehicles** in the Scene tree.
+**For traffic:** drag your car models into **`assets/models/cars`**. Every traffic car
+picks one at random and is resized to about 4.3 m long. If they drive backwards,
+click **Traffic** in the Scene tree and tick **Flip Car Models**.
+
+**For the cars you can drive:** there are two parked cars at the start, under **Vehicles** in the Scene tree.
 1. Click **Vehicles → Car**.
 2. In the Inspector, open **Car Model** and drag a car file onto the **Car Model** box.
    The blue box car disappears and your model takes its place.
@@ -157,6 +172,28 @@ There are two cars in the street, under **Vehicles** in the Scene tree.
 > The car's model doesn't change how it handles. The solid part is the invisible box shown in
 > blue lines. For a much bigger or smaller vehicle, click its **CollisionShape3D** and change
 > **Size**. You can also move the four **Wheel** nodes to sit where your model's wheels are.
+
+---
+
+## Traffic
+
+Click **Traffic** in the Scene tree to change it in the Inspector:
+| Setting | What it does |
+|---------|--------------|
+| Car Count / Bus Count | How many cars and buses drive around (default 30 + 3) |
+| Cruise Speed Kmh | How fast traffic drives (default 40 km/h, about 25 mph) |
+| Car Models Folder | Where traffic finds car models (default `assets/models/cars`) |
+| Flip Car Models | Tick if your traffic cars drive backwards |
+
+What the traffic does:
+- It drives on the **left**, takes a random turn at each junction and takes turns to cross.
+- It slows down and queues behind other cars, and stops if **you** step into the road
+  or block it with a car.
+- If a car is stuck for a long time somewhere you can't see, it quietly reappears
+  somewhere else, so jams clear themselves.
+- Traffic only appears when you **play**, not in the editor.
+- You can't get into traffic cars yet. Crashing into them is like hitting a wall: they
+  carry on and don't get damaged.
 
 ---
 

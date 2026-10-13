@@ -132,6 +132,16 @@ func get_half_extents() -> Vector2:
 	return Vector2(blocks_x * pitch + road_width, blocks_z * pitch + road_width) / 2.0
 
 
+## Number of junctions across and deep (one more than the number of blocks).
+func get_junction_count() -> Vector2i:
+	return Vector2i(blocks_x + 1, blocks_z + 1)
+
+
+## Centre of junction ([param i], [param j]) at road level.
+func get_junction_position(i: int, j: int) -> Vector3:
+	return Vector3(_road_x(i), 0.0, _road_z(j))
+
+
 ## Centre line of road number [param index] (0 = westmost / northmost).
 func _road_x(index: int) -> float:
 	return -get_half_extents().x + road_width / 2.0 + index * (block_size + road_width)

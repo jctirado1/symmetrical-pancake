@@ -7,18 +7,30 @@ extends CharacterBody3D
 ## select the Player node, so you can tweak it without touching code.
 
 @export_group("Character Model")
-## Your character: drag a .glb, .gltf, .fbx or .obj file here. Leave empty
-## to use the blue capsule.
+## Your character: drag a .glb, .gltf, .fbx or .obj file here. If you leave
+## it empty, the first model in Character Folder is used instead, and if
+## that folder is empty too you get the blue capsule.
 @export var character_model: Resource:
 	set(value):
 		character_model = value
+		_rebuild_model()
+## Folder the game looks in for a character when Character Model is empty.
+@export_dir var character_folder := "res://assets/characters":
+	set(value):
+		character_folder = value
 		_rebuild_model()
 ## Optional .png to paint onto the character (for models that show up white).
 @export var character_texture: Texture2D:
 	set(value):
 		character_texture = value
 		_rebuild_model()
-## Make the model bigger or smaller. The capsule is 1.8 m tall.
+## Resize the character automatically so it's 1.8 m tall (the size of the
+## capsule) and standing on the ground. Untick to use Model Scale only.
+@export var fit_to_height := true:
+	set(value):
+		fit_to_height = value
+		_rebuild_model()
+## Make the model bigger or smaller (applied after Fit To Height).
 @export_range(0.01, 10.0, 0.01, "or_greater") var model_scale := 1.0:
 	set(value):
 		model_scale = value
@@ -67,6 +79,7 @@ func _ready() -> void:
 	_rebuild_model()
 	if Engine.is_editor_hint():
 		return
+	add_to_group("player")
 	spawn_position = global_position
 	# Stop the camera arm from bumping into the player's own capsule.
 	spring_arm.add_excluded_object(get_rid())
@@ -174,15 +187,28 @@ func _rebuild_model() -> void:
 		_model.queue_free()
 		_model = null
 		_anim_player = null
-	$Body/Mesh.visible = character_model == null
-	$Body/Face.visible = character_model == null
-	if character_model == null:
+	var model_file := character_model
+	if model_file == null:
+		var found := ModelLoader.find_model_files(character_folder, true)
+		if not found.is_empty():
+			model_file = load(found[0])
+			if not Engine.is_editor_hint():
+				print("Using character from folder: ", found[0])
+	$Body/Mesh.visible = model_file == null
+	$Body/Face.visible = model_file == null
+	if model_file == null:
 		return
 
-	_model = ModelLoader.instantiate(character_model, character_texture)
+	_model = ModelLoader.instantiate(model_file, character_texture)
 	if _model == null:
 		return
-	_model.scale = Vector3.ONE * model_scale
+	var final_scale := model_scale
+	if fit_to_height:
+		var aabb := ModelLoader.get_aabb(_model)
+		if aabb.size.y > 0.0:
+			final_scale *= 1.8 / aabb.size.y
+			_model.position.y = -aabb.position.y * final_scale
+	_model.scale = Vector3.ONE * final_scale
 	# Most character files face "forwards" towards the camera (+Z), while
 	# Godot's forward is -Z, so turn them round unless told otherwise.
 	if not flip_model_direction:

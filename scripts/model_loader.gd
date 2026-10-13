@@ -82,14 +82,16 @@ static func get_aabb(node: Node3D, parent_transform := Transform3D.IDENTITY) -> 
 
 
 ## Lists every model file (.glb, .gltf, .fbx, .obj) in [param folder] and its
-## sub-folders.
-static func find_model_files(folder: String) -> Array[String]:
+## sub-folders, in alphabetical order. If [param optional] is true, a missing
+## folder just gives an empty list instead of a warning.
+static func find_model_files(folder: String, optional := false) -> Array[String]:
 	var result: Array[String] = []
 	if folder == "":
 		return result
 	var dir := DirAccess.open(folder)
 	if dir == null:
-		push_warning("Can't open folder '%s'." % folder)
+		if not optional:
+			push_warning("Can't open folder '%s'." % folder)
 		return result
 	for file in dir.get_files():
 		# In an exported game the files are listed with ".import" on the end.
@@ -98,5 +100,6 @@ static func find_model_files(folder: String) -> Array[String]:
 		if file.get_extension().to_lower() in ["glb", "gltf", "fbx", "obj"] and path not in result:
 			result.append(path)
 	for sub in dir.get_directories():
-		result.append_array(find_model_files(folder.path_join(sub)))
+		result.append_array(find_model_files(folder.path_join(sub), optional))
+	result.sort()
 	return result
