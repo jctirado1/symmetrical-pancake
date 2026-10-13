@@ -11,7 +11,8 @@ extends Node3D
 @export_range(0, 200) var car_count := 30
 @export_range(0, 50) var bus_count := 3
 ## Folder of car models to use for traffic (one is picked at random for each
-## car). Leave empty, or put nothing in it, for the simple box cars.
+## car). If it's empty, every car found in the project is used instead (see
+## assets/found_assets.txt), and if there are none, simple box cars.
 @export_dir var car_models_folder := "res://assets/models/cars"
 ## Tick this if your car models drive backwards.
 @export var flip_car_models := false
@@ -25,11 +26,15 @@ var _car_models: Array[Resource] = []
 
 
 func _ready() -> void:
+	add_to_group("traffic")
 	if city == null:
 		push_warning("Traffic: set 'City' in the Inspector.")
 		return
 	_rng.randomize()
-	for path in ModelLoader.find_model_files(car_models_folder, true):
+	var paths := ModelLoader.find_model_files(car_models_folder, true)
+	if paths.is_empty():
+		paths = AssetFinder.cars()
+	for path in paths:
 		var model := load(path)
 		if model:
 			_car_models.append(model)
@@ -56,6 +61,11 @@ func lane_offset() -> float:
 
 func junction_half_size() -> float:
 	return city.road_width / 2.0
+
+
+## How far from the middle of a junction cars stop: just before the zebra.
+func stop_line_distance() -> float:
+	return city.crossing_offset() + 2.0
 
 
 func junction_position(junction: Vector2i) -> Vector3:
@@ -189,6 +199,12 @@ func free_distance_ahead(car: TrafficCar) -> float:
 	var player := get_tree().get_first_node_in_group("player") as Node3D
 	if player and player.visible:
 		nearest = minf(nearest, _gap_to(car, forward, player.global_position, 0.4, 1.5))
+	# People on a zebra crossing: like a real driver, stop for anyone on the
+	# crossing ahead, not just someone already in our lane.
+	var watch_width := city.road_width / 2.0 + 1.0
+	for person in get_tree().get_nodes_in_group("pedestrians"):
+		if person.on_road:
+			nearest = minf(nearest, _gap_to(car, forward, person.global_position, 0.4, watch_width))
 	return nearest
 
 

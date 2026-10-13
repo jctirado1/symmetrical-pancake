@@ -8,8 +8,9 @@ extends CharacterBody3D
 
 @export_group("Character Model")
 ## Your character: drag a .glb, .gltf, .fbx or .obj file here. If you leave
-## it empty, the first model in Character Folder is used instead, and if
-## that folder is empty too you get the blue capsule.
+## it empty, the first model in Character Folder is used instead. If that
+## folder is empty too, the first character found anywhere in the project is
+## used (see assets/found_assets.txt), and failing that, the blue capsule.
 @export var character_model: Resource:
 	set(value):
 		character_model = value
@@ -190,10 +191,12 @@ func _rebuild_model() -> void:
 	var model_file := character_model
 	if model_file == null:
 		var found := ModelLoader.find_model_files(character_folder, true)
+		if found.is_empty() and AssetFinder.player_character() != "":
+			found.append(AssetFinder.player_character())
 		if not found.is_empty():
 			model_file = load(found[0])
 			if not Engine.is_editor_hint():
-				print("Using character from folder: ", found[0])
+				print("Using character: ", found[0])
 	$Body/Mesh.visible = model_file == null
 	$Body/Face.visible = model_file == null
 	if model_file == null:
@@ -252,7 +255,15 @@ func _update_animation() -> void:
 	elif horizontal_speed > 0.1:
 		state = "walk"
 	var anim_name: String = _anim_names.get(state, "")
-	if anim_name == "" or _anim_player.current_animation == anim_name:
+	if anim_name == "":
+		# No idle animation: freeze the walk instead of walking on the spot.
+		if state == "idle" and _anim_player.is_playing():
+			_anim_player.pause()
+		return
+	if _anim_player.current_animation == anim_name and _anim_player.is_playing():
+		return
+	if _anim_player.assigned_animation == anim_name:
+		_anim_player.play()  # Carry on from where it was paused.
 		return
 	# Make sure the animation repeats instead of stopping after one go.
 	_anim_player.get_animation(anim_name).loop_mode = Animation.LOOP_LINEAR

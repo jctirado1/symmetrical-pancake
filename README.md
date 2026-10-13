@@ -4,8 +4,9 @@ A GTA-style, semi-open-world game set in London, built with **Godot 4**.
 
 **So far:** a city of 6 × 6 blocks of London streets (about 450 m across) with zebra
 crossings, street lamps, parks, a suburban outer ring and an industrial edge. Traffic (cars,
-black cabs and red buses) drives on the left, turns at junctions and queues. You walk around
-in third person and can get into cars and drive them.
+black cabs and red buses) drives on the left, turns at junctions and queues. Pedestrians walk
+the pavements and use the zebra crossings. A minimap sits in the corner. You walk around in
+third person and can get into cars and drive them.
 
 | Key | Action |
 |-----|--------|
@@ -74,6 +75,9 @@ scripts/player.gd    The code that makes the player walk, run, jump and steer th
 scripts/city_grid.gd The city generator: builds the roads, pavements, buildings, lamps and parks
 scripts/traffic.gd   Traffic: routes, junction queues, and spotting what's in front
 scripts/traffic_car.gd  One computer-driven car or bus
+scripts/pedestrians.gd, pedestrian.gd  The people on the pavements
+scripts/minimap.gd   The minimap
+scripts/asset_finder.gd  Searches the project for character and car models
 scripts/car.gd       The code for driving, the chase camera and the speedometer
 scripts/model_prop.gd, model_loader.gd  The code behind the model slots
 assets/characters/   Put your player character here. It's used automatically.
@@ -93,7 +97,29 @@ assets/textures/     Put your GAMEPRO .png files here
 
 ## Adding your GAMEPRO assets
 
-### 1. Copy the files in
+### The quickest way: copy the whole GAMEPRO folder in
+Drag your entire **`GAMEPRO`** folder from your Desktop onto the **`res://`** folder at the
+top of Godot's **FileSystem** panel. Wait for the import progress bar to finish, then
+press **F5**. The game searches the whole project and works out which models are which:
+
+- **Characters** are recognised by names like *character, man, woman, player, npc* or *people*,
+  or because they have a skeleton (rigged for animation). The one named like a player or hero
+  (or the first one) becomes **you**, and the others become **pedestrians**.
+- **Cars** are recognised by names like *car, vehicle, sedan, taxi, van, truck* or *police*.
+  Wheels, doors and other loose car parts are ignored, and so are buildings like a
+  *Police_Station*. Cars are used for the **parked cars you can drive** and for the **traffic**.
+  Each one is turned to face along the road and resized to car length.
+
+After you press F5, open **`assets/found_assets.txt`** in the FileSystem panel to see exactly
+what was found and what each model is used for. If something is missing or in the wrong
+list, rename the file or put it in a folder called `characters` or `cars`. The first run
+with a big GAMEPRO folder can take a little while, because every model is checked once.
+After that it's remembered.
+
+> Models dropped into `assets/characters` or `assets/models/cars`, or set by hand in the
+> Inspector (below), always win over the automatic search.
+
+### 1. Copy the files in (to choose for yourself)
 In Godot's **FileSystem** panel (bottom left) you'll see `assets/models` and
 `assets/textures`. Drag files from your `Desktop/GAMEPRO` window onto them:
 - `.glb`, `.fbx`, `.obj` files go in **`assets/models`**
@@ -116,7 +142,7 @@ Godot imports them automatically. This takes a few seconds, and a progress bar a
 **The easy way:** drag your character's `.glb` or `.fbx` file into the **`assets/characters`**
 folder. The player uses it automatically: the blue capsule disappears, and your character
 is resized to 1.8 m tall and stood on the ground. If several are in there, the first one
-alphabetically is used.
+alphabetically is used. With nothing in that folder, the automatic search (above) picks one.
 
 **To choose a specific one:**
 1. Open `scenes/main.tscn` (double-click it in FileSystem).
@@ -159,9 +185,11 @@ click **Traffic** in the Scene tree and tick **Flip Car Models**.
 **For the cars you can drive:** there are two parked cars at the start, under **Vehicles** in the Scene tree.
 1. Click **Vehicles → Car**.
 2. In the Inspector, open **Car Model** and drag a car file onto the **Car Model** box.
-   The blue box car disappears and your model takes its place.
+   The blue box car disappears and your model takes its place. If you leave it empty, a car
+   found by the automatic search is used.
 3. Adjust it if needed:
-   - **Wrong size?** Change **Model Scale**. A real car is about 4 m long, the same as the box car.
+   - **Wrong size?** Cars are resized to 4.3 m long automatically. To use your own size,
+     untick **Fit To Car Size** and change **Model Scale**.
    - **Facing backwards?** Tick **Flip Model Direction**. The car drives towards the blue
      arrow (Z) you see when you click it.
    - **Floating or sunk into the road?** Change **Model Height Offset**.
@@ -194,6 +222,40 @@ What the traffic does:
 - Traffic only appears when you **play**, not in the editor.
 - You can't get into traffic cars yet. Crashing into them is like hitting a wall: they
   carry on and don't get damaged.
+
+---
+
+## Pedestrians
+
+People walk round the blocks on the pavements and cross the roads on the zebra crossings.
+Click **Pedestrians** in the Scene tree to change them:
+| Setting | What it does |
+|---------|--------------|
+| Count | How many people are out and about (default 80) |
+| Keep Within | People further away than this (metres) quietly reappear closer to you, so the streets around you always feel busy |
+| Characters Folder | A folder of character models to use. If empty, the characters the automatic search found (except yours) are used, and if there are none, simple coloured people |
+| Flip Models | Tick if they walk backwards |
+
+What they do:
+- They keep to the left, so people walking opposite ways pass each other.
+- At a crossing they wait until the road is clear. If they've waited a long time, they
+  step out anyway and **traffic stops for them**, like on a real zebra.
+- They stop rather than walk into you, and **jump out of the way** of a car you drive at
+  them. Cars can't knock them over.
+- If their model has a *walk* animation it plays. Otherwise they bob along.
+
+---
+
+## Minimap
+
+The map in the bottom-left corner shows the roads, blocks (green for parks), traffic as
+white dots, buses as red dots and cars you can drive as blue dots. You're the yellow arrow.
+It turns with the camera so up is always the way you're looking, the **N** shows where north
+is, and it zooms out while you're driving.
+
+To change it, click **Minimap** in the Scene tree. You can change how many metres it shows on
+foot and when driving, or untick **Rotate With Camera** to keep north at the top. To move or
+resize it, drag it in the **2D** view (click **2D** at the top of the editor).
 
 ---
 

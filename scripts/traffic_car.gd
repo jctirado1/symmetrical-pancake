@@ -72,10 +72,11 @@ func start_route(from: Vector2i, to: Vector2i, next: Vector2i) -> void:
 ## curve (or straight line) across it into the next road.
 func _build_path() -> void:
 	# Positions are for the middle of the car, so allow for its length: it
-	# stops with its front bumper at the junction and leaves once its tail is out.
+	# stops with its front bumper before the zebra crossing and leaves the
+	# junction once its tail is out.
 	var start := manager.lane_start(_from, _to, half_length)
 	var direction := (manager.junction_position(_to) - manager.junction_position(_from)).normalized()
-	var stop_line := manager.junction_position(_to) - direction * (manager.junction_half_size() + half_length) \
+	var stop_line := manager.junction_position(_to) - direction * (manager.stop_line_distance() + half_length) \
 		+ Vector3.UP.cross(direction) * manager.lane_offset()
 	var exit := manager.lane_start(_to, _next, half_length)
 
@@ -188,17 +189,8 @@ func _build_body() -> void:
 	if model and not is_bus:
 		var instance := ModelLoader.instantiate(model)
 		if instance:
-			var aabb := ModelLoader.get_aabb(instance)
-			# Scale the model to the length of a real car (about 4.3 m).
-			var length := maxf(aabb.size.z, 0.001)
-			var model_scale := 4.3 / length
-			instance.scale = Vector3.ONE * model_scale
-			if flip_model:
-				instance.rotation.y = PI
-			var bottom_centre := Vector3(aabb.get_center().x, aabb.position.y, aabb.get_center().z)
-			instance.position = -(instance.basis * bottom_centre)
+			size = ModelLoader.fit_vehicle(instance, 4.3, flip_model)
 			add_child(instance)
-			size = aabb.size * model_scale
 			half_length = size.z / 2.0
 			_add_collision(size)
 			return

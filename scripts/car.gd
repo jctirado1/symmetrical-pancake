@@ -6,8 +6,9 @@ extends VehicleBody3D
 ## W / S to drive and reverse, A / D to steer, Space for the handbrake.
 
 @export_group("Car Model")
-## Your car: drag a .glb, .gltf, .fbx or .obj file here. Leave empty to use
-## the simple box car.
+## Your car: drag a .glb, .gltf, .fbx or .obj file here. If empty, a car
+## found in the project is used (see assets/found_assets.txt); if there are
+## none, you get the simple box car.
 @export var car_model: Resource:
 	set(value):
 		car_model = value
@@ -17,7 +18,13 @@ extends VehicleBody3D
 	set(value):
 		car_texture = value
 		_rebuild_model()
-## Make the model bigger or smaller. The box car is about 4.2 m long.
+## Resize the model automatically to the length of a real car (4.3 m) and
+## turn it to face along the car. Untick to use Model Scale instead.
+@export var fit_to_car_size := true:
+	set(value):
+		fit_to_car_size = value
+		_rebuild_model()
+## Make the model bigger or smaller (only when Fit To Car Size is off).
 @export_range(0.01, 10.0, 0.01, "or_greater") var model_scale := 1.0:
 	set(value):
 		model_scale = value
@@ -144,17 +151,26 @@ func _rebuild_model() -> void:
 	if _model:
 		_model.queue_free()
 		_model = null
-	$BoxBody.visible = car_model == null
+	var model_file := car_model
+	if model_file == null:
+		var found := AssetFinder.cars()
+		if not found.is_empty():
+			# Each parked car picks a different one.
+			model_file = load(found[get_index() % found.size()])
+	$BoxBody.visible = model_file == null
 	for wheel in get_children():
 		if wheel is VehicleWheel3D:
-			wheel.get_child(0).visible = car_model == null or show_box_wheels
-	if car_model == null:
+			wheel.get_child(0).visible = model_file == null or show_box_wheels
+	if model_file == null:
 		return
-	_model = ModelLoader.instantiate(car_model, car_texture)
+	_model = ModelLoader.instantiate(model_file, car_texture)
 	if _model == null:
 		return
-	_model.scale = Vector3.ONE * model_scale
-	_model.position.y = model_height_offset
-	if flip_model_direction:
-		_model.rotation.y = PI
+	if fit_to_car_size:
+		ModelLoader.fit_vehicle(_model, 4.3, flip_model_direction)
+	else:
+		_model.scale = Vector3.ONE * model_scale
+		if flip_model_direction:
+			_model.rotation.y = PI
+	_model.position.y += model_height_offset
 	add_child(_model)

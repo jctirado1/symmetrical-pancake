@@ -103,3 +103,28 @@ static func find_model_files(folder: String, optional := false) -> Array[String]
 		result.append_array(find_model_files(folder.path_join(sub), optional))
 	result.sort()
 	return result
+
+
+## Sizes and places a car model: it is turned to point along Z (whichever way
+## round it was made), scaled to [param length] metres long and stood on the
+## ground. Returns its size (width, height, length) in metres.
+static func fit_vehicle(model: Node3D, length: float, flip := false) -> Vector3:
+	var aabb := get_aabb(model)
+	var along_x := aabb.size.x > aabb.size.z
+	var model_length := maxf(maxf(aabb.size.x, aabb.size.z), 0.001)
+	var yaw := (PI / 2.0 if along_x else 0.0) + (PI if flip else 0.0)
+	var fitted := Basis(Vector3.UP, yaw) * Basis.from_scale(Vector3.ONE * length / model_length)
+	var bottom_centre := Vector3(aabb.get_center().x, aabb.position.y, aabb.get_center().z)
+	model.transform = Transform3D(fitted, -(fitted * bottom_centre))
+	var size := aabb.size * length / model_length
+	return Vector3(size.z, size.y, size.x) if along_x else size
+
+
+## Sizes and places a character model: scaled to [param height] metres tall,
+## feet on the ground, and turned round so it faces Godot's forward (-Z).
+static func fit_character(model: Node3D, height: float, flip := false) -> void:
+	var aabb := get_aabb(model)
+	var factor := height / maxf(aabb.size.y, 0.001)
+	var fitted := Basis(Vector3.UP, 0.0 if flip else PI) * Basis.from_scale(Vector3.ONE * factor)
+	var bottom_centre := Vector3(aabb.get_center().x, aabb.position.y, aabb.get_center().z)
+	model.transform = Transform3D(fitted, -(fitted * bottom_centre))

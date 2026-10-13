@@ -1,10 +1,12 @@
-[gd_scene load_steps=13 format=3]
+[gd_scene load_steps=15 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="1_player"]
 [ext_resource type="PackedScene" path="res://scenes/model_prop.tscn" id="2_prop"]
 [ext_resource type="PackedScene" path="res://scenes/car.tscn" id="3_car"]
 [ext_resource type="Script" path="res://scripts/city_grid.gd" id="4_city"]
 [ext_resource type="Script" path="res://scripts/traffic.gd" id="5_traffic"]
+[ext_resource type="Script" path="res://scripts/pedestrians.gd" id="6_peds"]
+[ext_resource type="PackedScene" path="res://scenes/minimap.tscn" id="7_minimap"]
 
 [sub_resource type="ProceduralSkyMaterial" id="SkyMat"]
 sky_top_color = Color(0.45, 0.55, 0.7, 1)
@@ -50,16 +52,20 @@ script = ExtResource("4_city")
 script = ExtResource("5_traffic")
 city = NodePath("../City")
 
+[node name="Pedestrians" type="Node3D" parent="." node_paths=PackedStringArray("city")]
+script = ExtResource("6_peds")
+city = NodePath("../City")
+
 [node name="Props" type="Node3D" parent="."]
 
 [node name="PhoneBox" type="CSGBox3D" parent="Props"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 1.38, 14)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.55, 1.38, 14)
 use_collision = true
 size = Vector3(1, 2.6, 1)
 material = SubResource("Mat_red")
 
 [node name="PostBox" type="CSGBox3D" parent="Props"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.5, 0.78, 20)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9.6, 0.78, 20)
 use_collision = true
 size = Vector3(0.6, 1.4, 0.6)
 material = SubResource("Mat_red")
@@ -77,3 +83,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.1, 0.3, -25)
 
 [node name="Player" parent="." instance=ExtResource("1_player")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 0.2, 26)
+
+[node name="Minimap" parent="." node_paths=PackedStringArray("city") instance=ExtResource("7_minimap")]
+city = NodePath("../City")

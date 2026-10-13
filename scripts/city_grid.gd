@@ -101,6 +101,7 @@ var _collision: StaticBody3D
 var _box_mesh := BoxMesh.new()
 var _batches := {}  # Material -> Array of Transform3D, drawn as one MultiMesh each.
 var _model_lists := {}  # Zone -> Array of model file paths.
+var _block_zones := {}  # Vector2i block -> Zone.
 
 # Materials, made once per rebuild.
 var _mat_road: StandardMaterial3D
@@ -130,6 +131,24 @@ func _queue_rebuild() -> void:
 func get_half_extents() -> Vector2:
 	var pitch := block_size + road_width
 	return Vector2(blocks_x * pitch + road_width, blocks_z * pitch + road_width) / 2.0
+
+
+## How far each zebra crossing is from the middle of its junction. It lines
+## up with the middle of the pavement, where pedestrians walk.
+func crossing_offset() -> float:
+	return road_width / 2.0 + pavement_width / 2.0
+
+
+## The square a block covers, seen from above (x and z, in metres).
+func get_block_rect(bx: int, bz: int) -> Rect2:
+	var x0 := _road_x(bx) + road_width / 2.0
+	var z0 := _road_z(bz) + road_width / 2.0
+	return Rect2(x0, z0, block_size, block_size)
+
+
+## What kind of block it is: Zone.CITY, SUBURBAN, INDUSTRIAL or PARK.
+func get_block_zone(bx: int, bz: int) -> Zone:
+	return _block_zones.get(Vector2i(bx, bz), Zone.CITY)
 
 
 ## Number of junctions across and deep (one more than the number of blocks).
@@ -162,6 +181,7 @@ func _rebuild() -> void:
 	_collision.name = "Collision"
 	_generated.add_child(_collision)
 	_batches.clear()
+	_block_zones.clear()
 	_rng.seed = random_seed
 	_box_mesh.size = Vector3.ONE
 
@@ -194,7 +214,7 @@ func _build_ground() -> void:
 func _build_road_markings() -> void:
 	var half := get_half_extents()
 	var crossing_length := 3.0
-	var gap := road_width / 2.0 + crossing_length + 1.0  # Keep dashes clear of junctions.
+	var gap := crossing_offset() + crossing_length / 2.0 + 1.0  # Keep dashes clear of crossings.
 
 	# Roads running east-west (one per row of junctions), then north-south.
 	for j in blocks_z + 1:
@@ -220,7 +240,7 @@ func _build_road_markings() -> void:
 	for i in blocks_x + 1:
 		for j in blocks_z + 1:
 			var centre := Vector3(_road_x(i), 0.0, _road_z(j))
-			var offset := road_width / 2.0 + crossing_length / 2.0 + 0.5
+			var offset := crossing_offset()
 			if i < blocks_x: _add_zebra(centre + Vector3(offset, 0, 0), true)
 			if i > 0: _add_zebra(centre - Vector3(offset, 0, 0), true)
 			if j < blocks_z: _add_zebra(centre + Vector3(0, 0, offset), false)
@@ -261,6 +281,7 @@ func _zone_for(bx: int, bz: int) -> Zone:
 
 func _build_block(bx: int, bz: int) -> void:
 	var zone := _zone_for(bx, bz)
+	_block_zones[Vector2i(bx, bz)] = zone
 	var x0 := _road_x(bx) + road_width / 2.0  # West edge of the block.
 	var z0 := _road_z(bz) + road_width / 2.0  # North edge of the block.
 	var centre := Vector3(x0 + block_size / 2.0, 0, z0 + block_size / 2.0)
