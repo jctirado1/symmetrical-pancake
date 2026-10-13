@@ -63,8 +63,11 @@ project.godot        Project settings, including the controls (Project > Project
 icon.svg             The game's icon
 scenes/main.tscn     The London street: road, pavements, buildings, phone box, bus, sun, sky
 scenes/player.tscn   The player: a blue capsule with a camera behind it
+scenes/model_prop.tscn  A slot that shows any model file you give it (and makes it solid)
 scripts/player.gd    The code that makes the player walk, run, jump and steer the camera
-assets/              Put your GAMEPRO files here
+scripts/model_prop.gd, model_loader.gd  The code behind the model slots
+assets/models/       Put your GAMEPRO .glb / .fbx / .obj files here
+assets/textures/     Put your GAMEPRO .png files here
 ```
 
 ### Things to try (no code)
@@ -80,9 +83,54 @@ assets/              Put your GAMEPRO files here
 
 ## Adding your GAMEPRO assets
 
-1. Copy the files from `Desktop/GAMEPRO` into this project's `assets/` folder
-   (e.g. models into `assets/models/`, textures into `assets/textures/`).
-   You can drag them straight onto the **FileSystem** panel in Godot.
-2. Godot imports them automatically. 3D models work best as **.glb / .gltf**.
-   **.fbx** and **.obj** work too.
-3. To place a model in the street, drag it from the FileSystem panel into the 3D viewport.
+### 1. Copy the files in
+In Godot's **FileSystem** panel (bottom left) you'll see `assets/models` and
+`assets/textures`. Drag files from your `Desktop/GAMEPRO` window onto them:
+- `.glb`, `.fbx`, `.obj` files go in **`assets/models`**
+- `.png` files go in **`assets/textures`**
+
+Godot imports them automatically. This takes a few seconds, and a progress bar appears.
+
+> **If a model and its textures came in the same sub-folder** (e.g. `GAMEPRO/car/car.fbx`
+> plus `GAMEPRO/car/car_color.png`), copy the **whole sub-folder** into `assets/models`
+> instead. Models often look for their textures next to them.
+
+| File type | What Godot does with it |
+|-----------|-------------------------|
+| `.glb` / `.gltf` | Best format. Comes in with textures and animations. |
+| `.fbx` | Works well. Comes in with animations, but sometimes loses its textures. |
+| `.obj` | Shape only, with no animations. Often shows up white, so give it a `.png` (see below). |
+| `.png` | Textures (the "paint" for a model). |
+
+### 2. Use your character as the player
+1. Open `scenes/main.tscn` (double-click it in FileSystem).
+2. Click **Player** in the Scene tree (top left).
+3. In the Inspector (right), open the **Character Model** section.
+4. Drag your character's `.glb`/`.fbx` file from FileSystem onto the **Character Model** box.
+   The blue capsule is replaced by your model.
+5. Adjust it if needed:
+   - **Too big or too small?** Change **Model Scale** (try `0.01` if it's enormous, or `100` if it's tiny).
+   - **Walks backwards?** Tick **Flip Model Direction**.
+   - **Looks white?** Drag its `.png` onto **Character Texture**.
+6. Press **F5**. If the model has animations with names containing *idle*, *walk* or *run*,
+   they play automatically. If they don't play, look in the **Output** panel at the bottom.
+   It lists the animation names it found. Type the right names into **Idle/Walk/Run
+   Animation** in the Inspector.
+
+### 3. Place buildings, cars and props
+The street has an empty slot called **YourModelHere** (under **Props**).
+1. Click **YourModelHere** in the Scene tree.
+2. Drag a model file onto **Model** in the Inspector. It appears in the street.
+3. Optionally drag a `.png` onto **Texture**.
+4. Move it with the coloured arrows in the 3D view. Press **R** to switch to rotate,
+   **S** for scale and **W** to go back to move.
+
+**To add more:** right-click **YourModelHere** → **Duplicate** (or **Ctrl+D**), then give
+the copy a different model. Another way is to drag `scenes/model_prop.tscn` from FileSystem
+into the 3D view.
+
+Models placed this way are **solid**: the player bumps into them. Untick **Solid** for
+things you should be able to walk through.
+
+To swap a grey box building for one of your models, add a model slot where the box was.
+Then click the box and press **Delete**.
