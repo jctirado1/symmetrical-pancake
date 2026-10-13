@@ -42,6 +42,9 @@ extends CharacterBody3D
 @export var turn_speed := 10.0        ## How quickly the body turns to face where it walks.
 @export var mouse_sensitivity := 0.003
 
+## How close you need to be to a car to get in (metres).
+@export var enter_vehicle_distance := 4.0
+
 ## Lowest and highest the camera may tilt, in degrees.
 @export var camera_min_pitch := -70.0
 @export var camera_max_pitch := 20.0
@@ -51,10 +54,13 @@ var spawn_position: Vector3
 var _model: Node3D
 var _anim_player: AnimationPlayer
 var _anim_names := {}
+var _nearby_vehicle: Node3D = null
 
 @onready var camera_pivot: Node3D = $CameraPivot
 @onready var spring_arm: SpringArm3D = $CameraPivot/SpringArm3D
 @onready var body: Node3D = $Body
+@onready var camera: Camera3D = $CameraPivot/SpringArm3D/Camera3D
+@onready var hint_label: Label = $HUD/HintLabel
 
 
 func _ready() -> void:
@@ -70,6 +76,11 @@ func _ready() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if Engine.is_editor_hint():
 		return
+	if event.is_action_pressed("interact") and _nearby_vehicle:
+		get_viewport().set_input_as_handled()
+		_enter_vehicle(_nearby_vehicle)
+		return
+
 	# Esc frees the mouse; clicking in the game window captures it again.
 	if event.is_action_pressed("ui_cancel"):
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
@@ -116,11 +127,43 @@ func _physics_process(delta: float) -> void:
 
 	move_and_slide()
 	_update_animation()
+	_look_for_vehicle()
 
 	# Fell off the edge of the world? Put the player back at the start.
 	if global_position.y < -20.0:
 		global_position = spawn_position
 		velocity = Vector3.ZERO
+
+
+## Finds the nearest car within reach and shows the "Press E" hint.
+func _look_for_vehicle() -> void:
+	_nearby_vehicle = null
+	var best_distance := enter_vehicle_distance
+	for vehicle in get_tree().get_nodes_in_group("vehicles"):
+		var distance := global_position.distance_to(vehicle.global_position)
+		if distance < best_distance:
+			best_distance = distance
+			_nearby_vehicle = vehicle
+	hint_label.visible = _nearby_vehicle != null
+
+
+func _enter_vehicle(vehicle: Node3D) -> void:
+	# Hide the player and switch them off while they're driving.
+	visible = false
+	hint_label.visible = false
+	velocity = Vector3.ZERO
+	$CollisionShape3D.disabled = true
+	process_mode = Node.PROCESS_MODE_DISABLED
+	vehicle.enter(self)
+
+
+## Called by the car when the player gets out.
+func leave_vehicle(exit_position: Vector3) -> void:
+	global_position = exit_position
+	visible = true
+	$CollisionShape3D.disabled = false
+	process_mode = Node.PROCESS_MODE_INHERIT
+	camera.make_current()
 
 
 ## Swaps the blue capsule for your own character model, if one is set.

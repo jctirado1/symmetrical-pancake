@@ -2,8 +2,8 @@
 
 A GTA-style, semi-open-world game set in London, built with **Godot 4**.
 
-**Step 1 (this version):** a simple London street where you can walk a character around
-with a third-person camera.
+**So far:** a London street where you walk around in third person, and cars you can
+get into and drive.
 
 | Key | Action |
 |-----|--------|
@@ -11,7 +11,10 @@ with a third-person camera.
 | Mouse | Turn the camera |
 | Shift (hold) | Run |
 | Space | Jump |
+| E (or F) | Get into a nearby car / get out |
 | Esc | Free the mouse (click the game window to capture it again) |
+
+**In a car:** W = accelerate, S = brake / reverse, A / D = steer, Space = handbrake.
 
 ---
 
@@ -63,8 +66,10 @@ project.godot        Project settings, including the controls (Project > Project
 icon.svg             The game's icon
 scenes/main.tscn     The London street: road, pavements, buildings, phone box, bus, sun, sky
 scenes/player.tscn   The player: a blue capsule with a camera behind it
+scenes/car.tscn      A drivable car (a blue box car until you give it a model)
 scenes/model_prop.tscn  A slot that shows any model file you give it (and makes it solid)
 scripts/player.gd    The code that makes the player walk, run, jump and steer the camera
+scripts/car.gd       The code for driving, the chase camera and the speedometer
 scripts/model_prop.gd, model_loader.gd  The code behind the model slots
 assets/models/       Put your GAMEPRO .glb / .fbx / .obj files here
 assets/textures/     Put your GAMEPRO .png files here
@@ -126,7 +131,8 @@ The street has an empty slot called **YourModelHere** (under **Props**).
    **S** for scale and **W** to go back to move.
 
 **To add more:** right-click **YourModelHere** → **Duplicate** (or **Ctrl+D**), then give
-the copy a different model. Another way is to drag `scenes/model_prop.tscn` from FileSystem
+the copy a different model. Another way is to drag `scenes/car.tscn      A drivable car (a blue box car until you give it a model)
+scenes/model_prop.tscn` from FileSystem
 into the 3D view.
 
 Models placed this way are **solid**: the player bumps into them. Untick **Solid** for
@@ -134,3 +140,28 @@ things you should be able to walk through.
 
 To swap a grey box building for one of your models, add a model slot where the box was.
 Then click the box and press **Delete**.
+
+### 4. Use your car models
+There are two cars in the street, under **Vehicles** in the Scene tree.
+1. Click **Vehicles → Car**.
+2. In the Inspector, open **Car Model** and drag a car file onto the **Car Model** box.
+   The blue box car disappears and your model takes its place.
+3. Adjust it if needed:
+   - **Wrong size?** Change **Model Scale**. A real car is about 4 m long, the same as the box car.
+   - **Facing backwards?** Tick **Flip Model Direction**. The car drives towards the blue
+     arrow (Z) you see when you click it.
+   - **Floating or sunk into the road?** Change **Model Height Offset**.
+   - **No wheels showing?** Tick **Show Box Wheels**.
+4. **More cars:** click a car and press **Ctrl+D**, or drag `scenes/car.tscn` into the 3D view.
+5. **Tweak the handling:** open the **Driving** section (engine force, brakes, steering, top speed).
+
+> The car's model doesn't change how it handles. The solid part is the invisible box shown in
+> blue lines. For a much bigger or smaller vehicle, click its **CollisionShape3D** and change
+> **Size**. You can also move the four **Wheel** nodes to sit where your model's wheels are.
+
+### Tips for the city packs
+- Build blocks from the **suburban / normal / industrial** packs using model slots
+  (section 3). Duplicate a slot (**Ctrl+D**) and swap the model to make a terrace of houses or shops.
+- To make positioning tidy, turn on snapping: click the **magnet icon** in the toolbar above
+  the 3D view. Objects then move in 1 m steps.
+- Big packs can slow the editor down while they import. That's normal the first time.
