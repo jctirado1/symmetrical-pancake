@@ -19,6 +19,9 @@ third person and can get into cars and drive them.
 
 **In a car:** W = accelerate, S = brake / reverse, A / D = steer, Space = handbrake.
 
+> **Prefer Unity?** The same game, rebuilt for Unity, is in the [`unity`](unity/README.md)
+> folder, with its own step-by-step instructions.
+
 ---
 
 ## How to get it running (no coding needed)
